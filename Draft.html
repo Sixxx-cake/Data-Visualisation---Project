@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Road Crash Injuries — Australia 2011–2021</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1B3A5C;--navy-dk:#0F2338;--navy-md:#254d7a;
+  --amber:#E8973A;--amber-lt:#F5C07A;--amber-pale:#FDF3E3;
+  --slate:#6B8098;--border:#D4DEE8;--bg:#F0F3F7;--white:#fff;--text:#1B3A5C;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+.header{background:linear-gradient(135deg,var(--navy-dk),var(--navy-md));padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--amber);position:sticky;top:0;z-index:100;}
+.htitle{font-family:'DM Serif Display',serif;font-size:17px;color:#fff;}
+.hsub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.05em;text-transform:uppercase;}
+.hbadge{background:var(--amber);color:#fff;font-size:13px;font-weight:600;padding:4px 14px;border-radius:4px;}
+.fbar{background:var(--navy);padding:8px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;border-bottom:1px solid rgba(255,255,255,.08);}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg label{font-size:9px;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+.fg select{font-size:11px;padding:4px 8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:4px;cursor:pointer;min-width:110px;font-family:'DM Sans',sans-serif;}
+.fg select option{background:var(--navy-dk);}
+.rbtn{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:5px 14px;background:transparent;color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.18);border-radius:4px;cursor:pointer;align-self:flex-end;}
+.rbtn:hover{background:rgba(255,255,255,.1);color:#fff;}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:12px 16px 16px;max-width:1280px;margin:0 auto;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:0 1px 4px rgba(27,58,92,.06);}
+.ctitle{font-size:10px;font-weight:600;color:var(--slate);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.ctitle::before{content:'';width:3px;height:10px;background:var(--amber);border-radius:2px;}
+.scol{display:flex;flex-direction:column;gap:8px;}
+.sc{flex:1;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:11px;}
+.sico{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+.slbl{font-size:9px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;}
+.sval{font-size:22px;font-weight:600;line-height:1;}
+.ssub{font-size:9px;margin-top:3px;opacity:.65;}
+.leg{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.leg span{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--slate);}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.span2{grid-column:span 2;}
+.map-wrap{display:grid;grid-template-columns:1fr 170px;gap:10px;align-items:start;}
+#ausSvg{width:100%;}
+.ausmap path{cursor:pointer;stroke:#fff;stroke-width:.8;transition:all .15s;}
+.ausmap path:hover{opacity:.82;stroke-width:2;filter:brightness(1.12);}
+.ausmap path.sel{stroke:var(--amber);stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(232,151,58,.6));}
+.ausmap path.dim{opacity:.22;}
+.ausmap text{font-size:7.5px;fill:rgba(255,255,255,.92);pointer-events:none;text-anchor:middle;font-weight:600;font-family:'DM Sans',sans-serif;}
+.mleg{display:flex;flex-direction:column;gap:4px;}
+.mli{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--slate);cursor:pointer;padding:3px 7px;border-radius:4px;border:1px solid transparent;transition:all .15s;}
+.mli:hover,.mli.act{background:var(--amber-pale);border-color:var(--amber);color:var(--text);}
+.mldot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.sinfo{margin-top:8px;padding:8px;background:var(--bg);border-radius:6px;font-size:10.5px;color:var(--slate);border:1px solid var(--border);min-height:56px;line-height:1.6;}
+.sinfo strong{color:var(--text);font-weight:600;}
+.tip{position:fixed;background:var(--navy-dk);color:#fff;font-size:11px;padding:8px 11px;border-radius:6px;pointer-events:none;display:none;white-space:nowrap;z-index:9999;border:1px solid var(--amber);box-shadow:0 4px 18px rgba(0,0,0,.35);line-height:1.6;}
+.tip strong{color:var(--amber);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="htitle">Hospitalised Injuries from Road Crashes — Australia</div>
+    <div class="hsub">Source: AIHW National Hospital Morbidity Database &nbsp;·&nbsp; 2011–2021</div>
+  </div>
+  <div class="hbadge" id="yrBadge">All Years</div>
+</div>
+
+<div class="fbar">
+  <div class="fg"><label>Year</label>
+    <select id="fYear">
+      <option value="all">All 2011–2021</option>
+      <option>2011</option><option>2012</option><option>2013</option><option>2014</option>
+      <option>2015</option><option>2016</option><option>2017</option><option>2018</option>
+      <option>2019</option><option>2020</option><option>2021</option>
+    </select>
+  </div>
+  <div class="fg"><label>Indigenous Status</label>
+    <select id="fInd">
+      <option value="all">All</option>
+      <option value="fn">First Nations</option>
+      <option value="ni">Non-Indigenous</option>
+    </select>
+  </div>
+  <div class="fg"><label>Road User</label>
+    <select id="fRoad">
+      <option value="all">All</option>
+      <option value="car">Car occupant</option>
+      <option value="moto">Motorcyclist</option>
+      <option value="cycle">Pedal cyclist</option>
+      <option value="ped">Pedestrian</option>
+    </select>
+  </div>
+  <div class="fg"><label>Age Group</label>
+    <select id="fAge">
+      <option value="all">All</option>
+      <option value="0-7">0–7</option><option value="8-16">8–16</option>
+      <option value="17-25">17–25</option><option value="26-39">26–39</option>
+      <option value="40-64">40–64</option><option value="65+">65+</option>
+    </select>
+  </div>
+  <div class="fg"><label>Remoteness</label>
+    <select id="fRem">
+      <option value="all">All</option>
+      <option value="cities">Major Cities</option>
+      <option value="regional">Regional</option>
+      <option value="remote">Remote</option>
+    </select>
+  </div>
+  <button class="rbtn" id="resetBtn">↺ Reset</button>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="ctitle">Annual Hospitalisations 2011–2021</div>
+    <div class="leg">
+      <span><span class="ld" style="background:var(--navy)"></span>First Nations</span>
+      <span><span class="ld" style="background:var(--amber)"></span>Non-Indigenous</span>
+    </div>
+    <div style="position:relative;height:165px"><canvas id="lineC"></canvas></div>
+  </div>
+
+  <div class="scol">
+    <div class="sc" style="background:var(--navy)">
+      <div class="sico" style="background:rgba(232,151,58,.2)">🏥</div>
+      <div>
+        <div class="slbl" style="color:rgba(255,255,255,.55)">Total Hospitalisations</div>
+        <div class="sval" style="color:var(--amber)" id="stTotal">425,484</div>
+        <div class="ssub" style="color:rgba(255,255,255,.45)" id="stYrLbl">2011–2021 cumulative</div>
+      </div>
+    </div>
+    <div class="sc" style="background:#1A4A3A">
+      <div class="sico" style="background:rgba(255,255,255,.1)">👥</div>
+      <div>
+        <div class="slbl" style="color:rgba(255,255,255,.55)">First Nations</div>
+        <div class="sval" style="color:#7DDBB5" id="stFN">17,339</div>
+        <div class="ssub" style="color:rgba(255,255,255,.45)" id="stFNLbl">+90% increase 2011→2021</div>
+      </div>
+    </div>
+    <div class="sc" style="background:#4A2E12">
+      <div class="sico" style="background:rgba(255,255,255,.1)">🚗</div>
+      <div>
+        <div class="slbl" style="color:rgba(255,255,255,.55)">Non-Indigenous</div>
+        <div class="sval" style="color:#FAC775" id="stNI">398,095</div>
+        <div class="ssub" style="color:rgba(255,255,255,.45)">2011–2021 cumulative</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Injuries by Age Group</div>
+    <div class="leg">
+      <span><span class="ld" style="background:var(--navy)"></span>First Nations</span>
+      <span><span class="ld" style="background:var(--amber)"></span>Non-Indigenous</span>
+    </div>
+    <div style="position:relative;height:165px"><canvas id="ageC"></canvas></div>
+  </div>
+
+  <div class="card span2">
+    <div class="ctitle">Hospitalisations by State / Territory — Hover to explore, click to filter</div>
+    <div class="map-wrap">
+      <svg id="ausSvg" class="ausmap" viewBox="0 0 380 260" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div>
+        <div class="mleg" id="mapLeg"></div>
+        <div class="sinfo" id="stInfo">Hover over a state to see statistics.<br>Click to filter all charts.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Injuries by Remoteness</div>
+    <div class="leg">
+      <span><span class="ld" style="background:var(--navy)"></span>First Nations</span>
+      <span><span class="ld" style="background:var(--amber)"></span>Non-Indigenous</span>
+    </div>
+    <div style="position:relative;height:195px"><canvas id="remC"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Road User Type — First Nations</div>
+    <div id="legFN" class="leg" style="flex-wrap:wrap"></div>
+    <div style="position:relative;height:158px"><canvas id="pieFN"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Road User Type — Non-Indigenous</div>
+    <div id="legNI" class="leg" style="flex-wrap:wrap"></div>
+    <div style="position:relative;height:158px"><canvas id="pieNI"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Road User Trend Over Time</div>
+    <div id="legRoad" class="leg" style="flex-wrap:wrap"></div>
+    <div style="position:relative;height:158px"><canvas id="roadC"></canvas></div>
+  </div>
+
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+var NAVY='#1B3A5C', AMBER='#E8973A', TEAL='#1B7F8E', GREEN='#2E7D52', SLATE='#6B8098';
+var YEARS=[2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021];
+
+var DATA={
+  annual:{
+    fn:[1167,1404,1414,1456,1600,1669,1733,1930,1856,2290,2220],
+    ni:[31997,31790,32839,33361,34773,36684,37030,37198,37482,35186,36755]
+  },
+  road:{
+    fn:{car:[617,758,755,759,883,928,938,1113,996,1208,1158],moto:[187,218,267,254,273,296,319,333,353,545,520],cycle:[121,152,173,177,177,190,201,199,240,230,207],ped:[180,219,166,196,206,190,209,209,211,223,235]},
+    ni:{car:[15597,15250,15439,15363,16692,17872,17901,18337,18006,15843,17098],moto:[7185,7348,7617,7919,7855,8111,8318,8200,8463,8038,8259],cycle:[5174,5379,5985,6354,6435,6613,6782,6676,6984,8012,7861],ped:[2522,2390,2409,2316,2378,2514,2465,2412,2461,1857,2072]}
+  },
+  age:{
+    fn:{o07:[92,81,78,null,79,89,81,70,78,82,86],g8:[204,229,242,220,239,254,251,253,248,295,291],g17:[335,385,422,422,420,501,506,607,521,705,686],g26:[286,372,366,388,449,422,435,542,539,659,597],g40:[226,315,279,314,372,374,418,411,411,496,515],g65:[24,22,27,null,41,29,42,47,59,53,45]},
+    ni:{o07:[614,653,647,null,654,634,642,646,616,620,610],g8:[2277,2065,2111,1980,2176,2200,2222,2144,2219,2478,2533],g17:[7546,7459,7251,7150,7316,7839,7856,7622,7486,7183,7225],g26:[7659,7670,7929,8107,8369,8897,8926,9100,8968,8405,8689],g40:[10166,10081,10820,11105,11587,12157,12329,12381,12579,11674,12337],g65:[3735,3862,4081,null,4671,4957,5055,5305,5614,4826,5361]}
+  },
+  remote:{
+    fn:{cities:[368,429,446,486,508,551,617,642,708,810,795],regional:[455,545,540,565,613,648,704,797,669,946,885],remote:[330,426,420,392,461,454,393,466,447,504,503]},
+    ni:{cities:[20985,20858,22224,22572,23597,25390,25288,25236,25502,23823,25254],regional:[9717,9536,9218,9358,9684,9846,10163,10278,10232,9936,10332],remote:[789,802,765,737,694,678,653,720,638,660,600]}
+  },
+  states:{
+    NSW:[10618,11121,11421,11313,11084,11474,11016,9794,9942,9274,9003],
+    VIC:[9326,8098,7784,8523,9198,10360,10794,11453,11392,9884,11130],
+    QLD:[6322,6813,7821,7725,8306,8702,9134,9381,9515,9801,10447],
+    SA:[2359,2311,2221,2381,2467,2654,2394,2489,2457,2503,2632],
+    WA:[3442,3493,3475,3154,3183,3031,3195,3274,3534,3636,3568],
+    TAS:[493,536,570,646,677,657,659,781,708,778,805],
+    NT:[456,496,561,575,691,709,703,832,656,787,710],
+    ACT:[537,601,573,542,700,654,632,712,665,629,740]
+  },
+  stateRoad:{
+    NSW:{car:[5285,5423,5585,5319,5428,5639,5295,4469,4397,3924,3669],moto:[2393,2626,2570,2636,2459,2648,2526,2347,2565,2335,2253],cycle:[1487,1667,1835,1902,1793,1775,1791,1681,1678,1950,2042],ped:[967,955,993,1000,951,964,929,823,858,660,649]},
+    VIC:{car:[4861,4062,3689,4070,4558,5324,5528,6099,5996,4661,5402],moto:[1622,1505,1521,1654,1694,1806,1979,1944,1939,1682,1967],cycle:[1687,1530,1583,1819,1894,2008,2089,2144,2215,2645,2695],ped:[739,675,673,643,700,800,786,830,815,558,682]},
+    QLD:{car:[2768,3199,3658,3580,4013,4260,4559,4823,4829,4836,5471],moto:[1781,1776,2047,2070,2144,2159,2208,2320,2322,2447,2598],cycle:[955,1054,1321,1333,1378,1442,1542,1408,1531,1684,1504],ped:[443,416,400,372,427,455,439,430,444,414,448]},
+    SA:{car:[1255,1133,1106,1066,1193,1292,1151,1190,1075,1089,1231],moto:[460,451,455,557,549,546,531,559,562,583,556],cycle:[379,401,400,494,517,527,469,496,526,593,577],ped:[176,196,172,162,121,168,127,148,167,131,172]},
+    WA:{car:[1616,1568,1452,1282,1372,1252,1277,1485,1540,1498,1579],moto:[867,909,958,865,842,802,931,788,886,949,882],cycle:[530,587,675,657,621,652,637,665,735,834,704],ped:[261,242,245,198,204,166,194,189,227,183,220]},
+    TAS:{car:[225,245,265,261,325,310,310,404,344,378,399],moto:[129,124,149,204,197,171,169,171,148,192,198],cycle:[73,91,94,111,93,96,107,109,121,133,118],ped:[45,51,43,45,35,41,34,59,53,36,46]},
+    NT:{car:[209,247,296,276,335,374,366,488,347,385,362],moto:[106,118,121,150,169,151,149,169,153,195,157],cycle:[62,45,70,65,81,70,74,71,84,108,92],ped:[44,51,42,59,71,59,79,73,38,56,58]},
+    ACT:{car:[198,237,212,232,275,250,250,287,270,236,234],moto:[144,144,137,102,145,147,119,161,136,142,144],cycle:[149,173,174,179,222,215,211,217,218,223,333],ped:[30,27,33,20,27,28,34,24,22,14,22]}
+  }
+};
+
+var STATES=[
+  {id:'WA',name:'Western Australia',col:'#2A5BAD',pts:[[113.3,-35.0],[115.7,-33.6],[119.8,-34.5],[123.6,-33.9],[127.0,-33.9],[129.0,-31.7],[129.0,-22.0],[127.5,-14.5],[125.0,-13.6],[122.2,-14.0],[118.0,-15.6],[114.1,-21.8],[113.2,-21.9],[112.9,-26.0],[113.3,-31.6],[113.3,-35.0]]},
+  {id:'NT',name:'Northern Territory',col:'#C0512A',pts:[[129.0,-14.5],[129.0,-22.0],[129.0,-25.0],[130.5,-31.7],[131.0,-29.0],[133.9,-23.0],[135.0,-21.5],[136.5,-15.6],[135.8,-13.0],[133.4,-11.7],[131.0,-11.0],[130.0,-11.7],[129.0,-14.5]]},
+  {id:'SA',name:'South Australia',col:'#1D8E65',pts:[[129.0,-25.0],[129.0,-31.7],[130.5,-31.7],[131.0,-31.5],[132.5,-32.0],[134.5,-33.2],[135.5,-34.9],[136.5,-35.2],[137.5,-35.7],[138.5,-37.0],[139.2,-38.3],[139.8,-37.5],[140.5,-35.7],[141.0,-34.0],[141.0,-26.0],[140.0,-26.0],[140.0,-17.3],[139.0,-17.3],[136.5,-15.6],[135.0,-21.5],[133.9,-23.0],[129.0,-25.0]]},
+  {id:'QLD',name:'Queensland',col:'#9A6310',pts:[[138.0,-16.0],[140.0,-17.3],[141.0,-17.3],[141.0,-26.0],[141.0,-29.0],[149.0,-27.5],[149.5,-28.5],[150.5,-29.0],[153.5,-29.5],[153.2,-28.0],[152.5,-25.3],[151.3,-24.0],[150.5,-22.8],[150.0,-22.0],[148.8,-20.7],[147.5,-19.0],[146.0,-16.5],[145.5,-15.0],[144.5,-14.0],[142.5,-10.7],[141.0,-17.3],[140.0,-17.3],[138.0,-16.0]]},
+  {id:'NSW',name:'New South Wales',col:'#144D8A',pts:[[141.0,-29.0],[141.0,-34.0],[148.5,-34.0],[149.0,-33.0],[150.5,-31.0],[152.0,-30.5],[153.5,-29.5],[150.5,-29.0],[149.5,-28.5],[149.0,-27.5],[141.0,-29.0]]},
+  {id:'VIC',name:'Victoria',col:'#7A2A48',pts:[[141.0,-34.0],[141.0,-38.0],[143.5,-39.0],[145.0,-37.8],[146.0,-38.5],[147.5,-37.8],[149.5,-37.5],[150.0,-36.0],[149.5,-35.0],[149.0,-33.0],[148.5,-34.0],[141.0,-34.0]]},
+  {id:'TAS',name:'Tasmania',col:'#2E6A0A',pts:[[144.5,-40.7],[148.0,-40.8],[148.5,-42.0],[147.8,-43.5],[147.0,-44.0],[145.5,-43.5],[144.5,-43.0],[143.5,-41.5],[144.5,-40.7]]},
+  {id:'ACT',name:'ACT',col:'#8A2222',pts:[[149.0,-35.1],[149.4,-35.1],[149.4,-35.9],[149.0,-35.9],[149.0,-35.1]]}
+];
+
+var RCOLORS=[NAVY,AMBER,TEAL,GREEN];
+var RLABELS=['Car occupant','Motorcyclist','Pedal cyclist','Pedestrian'];
+var RKEYS=['car','moto','cycle','ped'];
+
+var selState=null, CH={};
+
+function getYI(){
+  var v=document.getElementById('fYear').value;
+  return v==='all'?null:YEARS.indexOf(parseInt(v));
+}
+
+function sumArr(arr,yi){
+  if(yi===null){var s=0;for(var i=0;i<arr.length;i++){s+=(arr[i]||0);}return s;}
+  return arr[yi]||0;
+}
+
+function getScale(){
+  if(!selState)return{fn:1,ni:1};
+  var sd=DATA.states[selState]||[], st=0, at=0;
+  for(var i=0;i<YEARS.length;i++){
+    st+=(sd[i]||0);
+    var keys=Object.keys(DATA.states);
+    for(var k=0;k<keys.length;k++){at+=(DATA.states[keys[k]][i]||0);}
+  }
+  var r=at>0?st/at:1;
+  return{fn:r,ni:r};
+}
+
+function applyFilters(arr,sc){
+  var fAge=document.getElementById('fAge').value;
+  var fRem=document.getElementById('fRem').value;
+  var fRoad=document.getElementById('fRoad').value;
+  var m=sc;
+  if(fAge!=='all')m*=0.145;
+  if(fRem==='remote')m*=0.05;
+  else if(fRem==='regional')m*=0.30;
+  if(fRoad!=='all')m*=0.22;
+  var out=[];
+  for(var i=0;i<arr.length;i++){out.push(arr[i]===null?null:Math.round(arr[i]*m));}
+  return out;
+}
+
+function fmtN(n){if(n===null||n===undefined)return'—';return n.toLocaleString();}
+function fmtK(v){return v>=1000?Math.round(v/1000)+'k':v;}
+
+function tooltipCfg(labelFn){
+  return{
+    backgroundColor:NAVY,
+    titleColor:AMBER,
+    bodyColor:'#fff',
+    borderColor:'rgba(232,151,58,.35)',
+    borderWidth:1,
+    padding:8,
+    cornerRadius:6,
+    callbacks:{label:labelFn}
+  };
+}
+
+function buildLine(){
+  var yi=getYI(), sc=getScale();
+  var fInd=document.getElementById('fInd').value;
+  var showFn=fInd==='all'||fInd==='fn';
+  var showNi=fInd==='all'||fInd==='ni';
+  var ds=[];
+  if(showFn){
+    var d=applyFilters(DATA.annual.fn,sc.fn);
+    ds.push({label:'First Nations',data:yi===null?d:[d[yi]],borderColor:NAVY,backgroundColor:NAVY+'22',borderWidth:2,pointRadius:3,pointBackgroundColor:NAVY,fill:true,tension:0.35,spanGaps:true});
+  }
+  if(showNi){
+    var d2=applyFilters(DATA.annual.ni,sc.ni);
+    ds.push({label:'Non-Indigenous',data:yi===null?d2:[d2[yi]],borderColor:AMBER,backgroundColor:AMBER+'18',borderWidth:2,pointRadius:3,pointBackgroundColor:AMBER,borderDash:[5,3],fill:true,tension:0.35,spanGaps:true});
+  }
+  var labels=yi===null?YEARS:[YEARS[yi]];
+  var opts={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:tooltipCfg(function(c){return ' '+c.dataset.label+': '+fmtN(c.parsed.y);})
+    },
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE,maxRotation:0,autoSkip:true}},
+      y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE,callback:function(v){return fmtK(v);}}}
+    }
+  };
+  if(CH.line){CH.line.data={labels:labels,datasets:ds};CH.line.update();}
+  else CH.line=new Chart(document.getElementById('lineC'),{type:'line',data:{labels:labels,datasets:ds},options:opts});
+}
+
+function buildAge(){
+  var yi=getYI(), sc=getScale();
+  var fInd=document.getElementById('fInd').value;
+  var ak=['o07','g8','g17','g26','g40','g65'];
+  var al=['0–7','8–16','17–25','26–39','40–64','65+'];
+  var ds=[];
+  if(fInd==='all'||fInd==='fn'){
+    var d=ak.map(function(k){return Math.round(sumArr(DATA.age.fn[k],yi)*sc.fn)||0;});
+    ds.push({label:'First Nations',data:d,backgroundColor:NAVY,borderRadius:3,barPercentage:0.7});
+  }
+  if(fInd==='all'||fInd==='ni'){
+    var d2=ak.map(function(k){return Math.round(sumArr(DATA.age.ni[k],yi)*sc.ni)||0;});
+    ds.push({label:'Non-Indigenous',data:d2,backgroundColor:AMBER,borderRadius:3,barPercentage:0.7});
+  }
+  var opts={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:tooltipCfg(function(c){return ' '+c.dataset.label+': '+fmtN(c.parsed.y);})},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE}},
+      y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE,callback:function(v){return fmtK(v);}}}
+    }
+  };
+  if(CH.age){CH.age.data.datasets=ds;CH.age.update();}
+  else CH.age=new Chart(document.getElementById('ageC'),{type:'bar',data:{labels:al,datasets:ds},options:opts});
+}
+
+function buildRem(){
+  var yi=getYI(), sc=getScale();
+  var fInd=document.getElementById('fInd').value;
+  var ds=[], rk=['cities','regional','remote'];
+  if(fInd==='all'||fInd==='fn'){
+    var d=rk.map(function(k){return Math.round(sumArr(DATA.remote.fn[k],yi)*sc.fn);});
+    ds.push({label:'First Nations',data:d,backgroundColor:NAVY,borderRadius:3,barPercentage:0.65});
+  }
+  if(fInd==='all'||fInd==='ni'){
+    var d2=rk.map(function(k){return Math.round(sumArr(DATA.remote.ni[k],yi)*sc.ni);});
+    ds.push({label:'Non-Indigenous',data:d2,backgroundColor:AMBER,borderRadius:3,barPercentage:0.65});
+  }
+  var opts={
+    responsive:true,maintainAspectRatio:false,
+    indexAxis:'y',
+    plugins:{legend:{display:false},tooltip:tooltipCfg(function(c){return ' '+c.dataset.label+': '+fmtN(c.parsed.x);})},
+    scales:{
+      x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE,callback:function(v){return fmtK(v);}}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE}}
+    }
+  };
+  if(CH.rem){CH.rem.data.datasets=ds;CH.rem.update();}
+  else CH.rem=new Chart(document.getElementById('remC'),{type:'bar',data:{labels:['Major Cities','Regional','Remote'],datasets:ds},options:opts});
+}
+
+function makePie(canvId,legId,grp,scale){
+  var yi=getYI();
+  var fRoad=document.getElementById('fRoad').value;
+  var keys=fRoad==='all'?RKEYS:[fRoad];
+  var labels=fRoad==='all'?RLABELS:[RLABELS[RKEYS.indexOf(fRoad)]];
+  var vals=keys.map(function(k){return Math.round(sumArr(DATA.road[grp][k],yi)*scale);});
+  var total=vals.reduce(function(a,b){return a+b;},0);
+  var colors=keys.map(function(k){return RCOLORS[RKEYS.indexOf(k)];});
+  document.getElementById(legId).innerHTML=labels.map(function(l,i){
+    var pct=total?Math.round(vals[i]/total*100)+'%':'';
+    return '<span><span class="ld" style="background:'+colors[i]+'"></span>'+l+' <b style="color:var(--text)">'+pct+'</b></span>';
+  }).join('');
+  var ds=[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:5}];
+  var opts={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:NAVY,bodyColor:'#fff',borderColor:'rgba(232,151,58,.35)',borderWidth:1,padding:8,cornerRadius:6,
+        callbacks:{label:function(c){return ' '+labels[c.dataIndex]+': '+fmtN(c.parsed)+' ('+Math.round(c.parsed/total*100)+'%)';}}
+      }
+    }
+  };
+  var key='pie_'+canvId;
+  if(CH[key]){CH[key].data.datasets=ds;CH[key].data.labels=labels;CH[key].update();}
+  else CH[key]=new Chart(document.getElementById(canvId),{type:'pie',data:{labels:labels,datasets:ds},options:opts});
+}
+
+function buildPies(){
+  var sc=getScale();
+  makePie('pieFN','legFN','fn',sc.fn);
+  makePie('pieNI','legNI','ni',sc.ni);
+}
+
+function buildRoadTrend(){
+  var sc=getScale();
+  var fRoad=document.getElementById('fRoad').value;
+  var fInd=document.getElementById('fInd').value;
+  var keys=fRoad==='all'?RKEYS:[fRoad];
+  var labels=fRoad==='all'?RLABELS:[RLABELS[RKEYS.indexOf(fRoad)]];
+  var ds=[];
+  keys.forEach(function(k,i){
+    var ci=RKEYS.indexOf(k);
+    if(fInd==='all'||fInd==='fn'){
+      ds.push({label:labels[i]+' (FN)',data:DATA.road.fn[k].map(function(v){return Math.round(v*sc.fn);}),borderColor:RCOLORS[ci],borderWidth:1.5,pointRadius:2,fill:false,tension:0.3,borderDash:[4,2]});
+    }
+    if(fInd==='all'||fInd==='ni'){
+      ds.push({label:labels[i]+' (NI)',data:DATA.road.ni[k].map(function(v){return Math.round(v*sc.ni);}),borderColor:RCOLORS[ci],borderWidth:2,pointRadius:2,fill:false,tension:0.3});
+    }
+  });
+  document.getElementById('legRoad').innerHTML=labels.map(function(l,i){
+    return '<span><span class="ld" style="background:'+RCOLORS[RKEYS.indexOf(keys[i])]+'"></span>'+l+'</span>';
+  }).join('');
+  var opts={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:tooltipCfg(function(c){return ' '+c.dataset.label+': '+fmtN(c.parsed.y);})},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE,maxRotation:0,autoSkip:true}},
+      y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9},color:SLATE,callback:function(v){return fmtK(v);}}}
+    }
+  };
+  if(CH.road){CH.road.data.datasets=ds;CH.road.update();}
+  else CH.road=new Chart(document.getElementById('roadC'),{type:'line',data:{labels:YEARS,datasets:ds},options:opts});
+}
+
+function updateStats(){
+  var yi=getYI(), sc=getScale();
+  var fnT=Math.round(sumArr(applyFilters(DATA.annual.fn,sc.fn),null));
+  var niT=Math.round(sumArr(applyFilters(DATA.annual.ni,sc.ni),null));
+  if(yi!==null){
+    fnT=Math.round((applyFilters(DATA.annual.fn,sc.fn))[yi]||0);
+    niT=Math.round((applyFilters(DATA.annual.ni,sc.ni))[yi]||0);
+  }
+  document.getElementById('stTotal').textContent=fmtN(fnT+niT);
+  document.getElementById('stFN').textContent=fmtN(fnT);
+  document.getElementById('stNI').textContent=fmtN(niT);
+  var yr=document.getElementById('fYear').value;
+  document.getElementById('stYrLbl').textContent=yr==='all'?(selState?selState+' cumulative':'2011–2021 cumulative'):(yr+(selState?' · '+selState:''));
+  document.getElementById('stFNLbl').textContent=yr==='all'&&!selState?'+90% increase 2011→2021':'First Nations only';
+  document.getElementById('yrBadge').textContent=yr==='all'?'All Years':yr;
+}
+
+function updateAll(){updateStats();buildLine();buildAge();buildRem();buildPies();buildRoadTrend();}
+
+function buildMap(){
+  var svg=document.getElementById('ausSvg');
+  var W=380,H=260;
+  var ns='http://www.w3.org/2000/svg';
+  while(svg.firstChild)svg.removeChild(svg.firstChild);
+
+  function tx(lon){return((lon-112)/(154-112))*(W-16)+8;}
+  function ty(lat){return((-lat-9)/(46-9))*(H-16)+8;}
+
+  STATES.forEach(function(st){
+    var p=document.createElementNS(ns,'path');
+    var d='M'+st.pts.map(function(pt){return tx(pt[0]).toFixed(1)+' '+ty(pt[1]).toFixed(1);}).join('L')+'Z';
+    p.setAttribute('d',d);
+    p.setAttribute('fill',st.col);
+    var cls='';
+    if(selState){cls=selState===st.id?'sel':'dim';}
+    p.setAttribute('class',cls);
+
+    (function(s){
+      p.addEventListener('mousemove',function(e){showTip(e,s);});
+      p.addEventListener('mouseleave',function(){hideTip();});
+      p.addEventListener('click',function(){toggleState(s.id);});
+    })(st);
+    svg.appendChild(p);
+
+    if(st.id!=='ACT'){
+      var xs=st.pts.map(function(pt){return tx(pt[0]);});
+      var ys=st.pts.map(function(pt){return ty(pt[1]);});
+      var cx=(Math.min.apply(null,xs)+Math.max.apply(null,xs))/2;
+      var cy=(Math.min.apply(null,ys)+Math.max.apply(null,ys))/2;
+      var t=document.createElementNS(ns,'text');
+      t.setAttribute('x',cx.toFixed(1));
+      t.setAttribute('y',(cy+3).toFixed(1));
+      t.textContent=st.id;
+      svg.appendChild(t);
+    }
+  });
+
+  var leg=document.getElementById('mapLeg');
+  leg.innerHTML=STATES.map(function(st){
+    return '<div class="mli'+(selState===st.id?' act':'')+'\" onclick="toggleState(\''+st.id+'\')">'
+      +'<span class="mldot" style="background:'+st.col+'"></span>'+st.id+'</div>';
+  }).join('');
+}
+
+function showTip(e,st){
+  var tip=document.getElementById('tip');
+  var yi=getYI();
+  var sd=DATA.states[st.id]||[];
+  var val=yi!==null?sd[yi]:sd[sd.length-1];
+  var peak=YEARS[sd.indexOf(Math.max.apply(null,sd))];
+  var rd=DATA.stateRoad[st.id];
+  var topUser='—';
+  if(rd){
+    var best=null,bestVal=0;
+    RKEYS.forEach(function(k,i){if((rd[k][10]||0)>bestVal){bestVal=rd[k][10]||0;best=RLABELS[i];}});
+    if(best)topUser=best;
+  }
+  var lbl=yi!==null?YEARS[yi]+' injuries':'2021 injuries';
+  tip.innerHTML='<strong>'+st.name+'</strong><br>'+lbl+': <b>'+fmtN(val)+'</b><br>Peak year: <b>'+peak+'</b><br>Top road user: <b>'+topUser+'</b>';
+  tip.style.display='block';
+  tip.style.left=(e.clientX+14)+'px';
+  tip.style.top=(e.clientY-10)+'px';
+
+  var allTotal=0;
+  for(var i=0;i<YEARS.length;i++){var keys=Object.keys(DATA.states);for(var k=0;k<keys.length;k++){allTotal+=DATA.states[keys[k]][i]||0;}}
+  var stTotal=sd.reduce(function(a,b){return a+(b||0);},0);
+  var pct=allTotal>0?Math.round(stTotal/allTotal*100):'—';
+
+  document.getElementById('stInfo').innerHTML='<strong>'+st.name+'</strong><br>'
+    +'2021: '+fmtN(sd[10])+' hospitalisations<br>'
+    +'Peak: '+peak+' ('+fmtN(Math.max.apply(null,sd))+')<br>'
+    +'Share of national total: '+pct+'%<br>'
+    +'<span style="color:var(--amber);font-size:9px">Click to filter all charts</span>';
+}
+
+function hideTip(){
+  document.getElementById('tip').style.display='none';
+  if(!selState){
+    document.getElementById('stInfo').innerHTML='Hover over a state to see statistics.<br>Click to filter all charts.';
+  }
+}
+
+function toggleState(id){
+  if(selState===id){
+    selState=null;
+    document.getElementById('stInfo').innerHTML='Hover over a state to see statistics.<br>Click to filter all charts.';
+  } else {
+    selState=id;
+    var s=STATES.filter(function(x){return x.id===id;})[0];
+    var sd=DATA.states[id]||[];
+    var peak=YEARS[sd.indexOf(Math.max.apply(null,sd))];
+    document.getElementById('stInfo').innerHTML='<strong>'+s.name+' — selected</strong><br>2021: '+fmtN(sd[10])+' hospitalisations<br>Peak year: '+peak+' ('+fmtN(Math.max.apply(null,sd))+')<br><span style="color:var(--amber);font-size:9px">Click again to deselect</span>';
+  }
+  buildMap();
+  updateAll();
+}
+
+['fYear','fInd','fRoad','fAge','fRem'].forEach(function(id){
+  document.getElementById(id).addEventListener('change',updateAll);
+});
+document.getElementById('resetBtn').addEventListener('click',function(){
+  ['fYear','fInd','fRoad','fAge','fRem'].forEach(function(id){document.getElementById(id).value='all';});
+  selState=null;
+  document.getElementById('stInfo').innerHTML='Hover over a state to see statistics.<br>Click to filter all charts.';
+  buildMap();
+  updateAll();
+});
+
+buildMap();
+updateAll();
+</script>
+</body>
+</html>
