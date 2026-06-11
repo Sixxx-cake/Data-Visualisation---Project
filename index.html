@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Road Crash Injuries — Australia 2011–2021</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="htitle">Hospitalised Injuries from Road Crashes — Australia</div>
+    <div class="hsub">Source: AIHW · 2011–2021</div>
+  </div>
+  <div class="hbadge" id="yrBadge">All Years</div>
+</div>
+
+<div class="fbar">
+  <div class="fg"><label>YEAR</label><select id="fYear"><option value="all">All</option><option>2011</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option></select></div>
+  <div class="fg"><label>STATUS</label><select id="fInd"><option value="all">All</option><option value="First Nations">First Nations</option><option value="Non-Indigenous">Non-Indigenous</option></select></div>
+  <button class="rbtn" id="resetBtn">Reset</button>
+  <button class="quiz-btn" id="openQuizBtn">QUIZ</button>
+</div>
+
+<div class="dashboard">
+  <div class="chart-card chart-tl">
+    <div class="chart-title">Annual Hospitalisations 2011–2021</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#1B3A5C"></div><span>First Nations</span></div>
+      <div class="legend-item"><div class="legend-color" style="background:#E8973A"></div><span>Non-Indigenous</span></div>
+    </div>
+    <div class="chart-container" id="line-chart"></div>
+  </div>
+
+  <div class="chart-card chart-tr">
+    <div class="chart-title">Injuries by Age Group</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#1B3A5C"></div><span>First Nations</span></div>
+      <div class="legend-item"><div class="legend-color" style="background:#E8973A"></div><span>Non-Indigenous</span></div>
+    </div>
+    <div class="chart-container" id="age-chart"></div>
+  </div>
+
+  <div class="stats-center">
+  <div class="sc">
+    <div>
+      <div class="slbl">TOTAL HOSPITALISED INJURIES</div>
+      <div class="sval" id="stTotal">—</div>
+      <div class="ssub" id="stYrLbl">2011–2021 cumulative</div>
+    </div>
+  </div>
+  <div class="sc" style="background:#1A4A3A">
+    <div>
+      <div class="slbl">FIRST NATIONS PEOPLES</div>
+      <div class="sval" id="stFN">—</div>
+      <div class="ssub" id="stFNLbl">First Nations</div>
+    </div>
+  </div>
+  <div class="sc" style="background:#4A2E12">
+    <div>
+      <div class="slbl">NON-INDIGENOUS AUSTRALIANS</div>
+      <div class="sval" id="stNI">—</div>
+      <div class="ssub">2011–2021 cumulative</div>
+    </div>
+  </div>
+</div>
+
+  <div class="chart-card chart-bl">
+    <div class="chart-title">Injuries by Remoteness</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#1B3A5C"></div><span>First Nations</span></div>
+      <div class="legend-item"><div class="legend-color" style="background:#E8973A"></div><span>Non-Indigenous</span></div>
+    </div>
+    <div class="chart-container" id="remoteness-chart"></div>
+  </div>
+
+  <div class="chart-card chart-br">
+    <div class="chart-title">Road User Distribution</div>
+    <div id="concentric-donut-container" style="display:flex; justify-content:center; flex-direction:column; align-items:center;"></div>
+  </div>
+</div>
+
+<div class="tooltip" id="chart-tooltip"></div>
+
+<div id="quizModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" id="closeQuizBtn">&times;</span>
+    <h3>Test Your Understanding</h3>
+    <p style="font-size:13px; color:var(--slate); margin-bottom:16px;">Answer these questions based on what you learned from the charts above.</p>
+    
+    <div class="quiz-question" id="q1">
+      <h4>Question 1 of 3</h4>
+      <p>Which year had the highest number of hospitalisations for First Nations peoples between 2011 and 2021?</p>
+      <div class="quiz-options">
+        <label class="quiz-option"><input type="radio" name="q1" value="2018"> 2018</label>
+        <label class="quiz-option"><input type="radio" name="q1" value="2019"> 2019</label>
+        <label class="quiz-option"><input type="radio" name="q1" value="2020"> 2020</label>
+        <label class="quiz-option"><input type="radio" name="q1" value="2021"> 2021</label>
+      </div>
+      <div id="q1-feedback" class="quiz-feedback neutral" style="display:none;"></div>
+    </div>
+
+    <div class="quiz-question" id="q2">
+      <h4>Question 2 of 3</h4>
+      <p>Which age group showed the biggest gap between First Nations and non-Indigenous Australians?</p>
+      <div class="quiz-options">
+        <label class="quiz-option"><input type="radio" name="q2" value="17-25"> 17-25 (Young adults)</label>
+        <label class="quiz-option"><input type="radio" name="q2" value="40-64"> 40-64 (Middle-aged adults)</label>
+        <label class="quiz-option"><input type="radio" name="q2" value="0-7"> 0-7 (Children)</label>
+        <label class="quiz-option"><input type="radio" name="q2" value="65+"> 65+ (Seniors)</label>
+      </div>
+      <div id="q2-feedback" class="quiz-feedback neutral" style="display:none;"></div>
+    </div>
+
+    <div class="quiz-question" id="q3">
+      <h4>Question 3 of 3</h4>
+      <p>Describe whether hospitalisations for First Nations peoples went up, went down, or stayed the same over the 11-year period.</p>
+      <div class="quiz-options">
+        <label class="quiz-option"><input type="radio" name="q3" value="went-down"> Went down (decreased)</label>
+        <label class="quiz-option"><input type="radio" name="q3" value="stayed-same"> Stayed the same (no change)</label>
+        <label class="quiz-option"><input type="radio" name="q3" value="went-up"> Went up (increased)</label>
+      </div>
+      <div id="q3-feedback" class="quiz-feedback neutral" style="display:none;"></div>
+    </div>
+
+    <button class="quiz-submit-btn" id="quizSubmitBtn">Submit Answers</button>
+    <div id="quizOverallFeedback" style="margin-top:16px;"></div>
+
+    <div id="feedbackSection" style="display:none; margin-top:20px;">
+      <div style="border-top:1px solid var(--border); padding-top:16px;">
+        <h4 style="color:var(--navy); margin-bottom:12px;">Share Your Feedback</h4>
+        <p style="font-size:12px; color:var(--slate); margin-bottom:12px;">Thank you for completing the quiz! Your feedback helps us improve this visualisation.</p>
+        <textarea id="userFeedback" class="feedback-textarea" rows="4" placeholder="What did you like? What could be improved? Any suggestions?"></textarea>
+        <button class="feedback-submit-btn" id="feedbackSubmitBtn">Submit Feedback</button>
+        <div id="feedbackMessage" class="feedback-message"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
